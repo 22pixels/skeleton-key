@@ -1,18 +1,11 @@
-import { useState } from 'react';
-import { Key, Lock, Shield, Zap, Github, Code, Globe, Chrome } from 'lucide-react';
+'use client'
+
+import { useState } from 'react'
+import { Key, Lock, Shield, Zap, Github, Code, Globe, Chrome } from 'lucide-react'
 
 export default function LandingPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('')
 
-<<<<<<< HEAD
-import { useState } from 'react';
-import { Key, Lock, Shield, Zap, Github, Code, Globe, Chrome } from 'lucide-react';
-
-export default function LandingPage() {
-  const [email, setEmail] = useState('');
-
-=======
->>>>>>> 28c7ad3b19d33fb951a9fa15f982373c16290197
   return (
     <div className="min-h-screen bg-[#2a2b2a] text-[#c2d3cd]">
       {/* Navigation */}
@@ -54,15 +47,6 @@ export default function LandingPage() {
             </p>
 
             <div className="flex gap-4 justify-center mb-12">
-<<<<<<< HEAD
-              <button className="bg-[#c2d3cd] hover:bg-[#afbfc0] px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 flex items-center gap-2 text-[#2a2b2a]">
-                <Zap className="w-5 h-5" />
-                Start Scanning Free
-              </button>
-              <button className="border-2 border-[#c2d3cd] hover:bg-[#c2d3cd]/10 px-8 py-4 rounded-lg font-semibold text-lg transition-all text-[#c2d3cd]">
-                View Demo
-              </button>
-=======
               <a href="/signup">
                 <button className="bg-[#c2d3cd] hover:bg-[#afbfc0] px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 flex items-center gap-2 text-[#2a2b2a]">
                   <Zap className="w-5 h-5" />
@@ -74,7 +58,6 @@ export default function LandingPage() {
                   View Demo
                 </button>
               </a>
->>>>>>> 28c7ad3b19d33fb951a9fa15f982373c16290197
             </div>
 
             {/* Stats */}
@@ -247,17 +230,11 @@ export default function LandingPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="flex-1 px-6 py-4 bg-[#2a2b2a] border border-[#395c6b]/30 rounded-lg focus:outline-none focus:border-[#395c6b] text-[#c2d3cd]"
             />
-<<<<<<< HEAD
-            <button className="bg-[#c2d3cd] hover:bg-[#afbfc0] px-8 py-4 rounded-lg font-semibold transition-all whitespace-nowrap text-[#2a2b2a]">
-              Get Early Access
-            </button>
-=======
             <a href="/signup">
               <button className="bg-[#c2d3cd] hover:bg-[#afbfc0] px-8 py-4 rounded-lg font-semibold transition-all whitespace-nowrap text-[#2a2b2a]">
                 Get Early Access
               </button>
             </a>
->>>>>>> 28c7ad3b19d33fb951a9fa15f982373c16290197
           </div>
           <p className="text-sm text-[#9fa4a9]">No credit card required. Start scanning in under 2 minutes.</p>
         </div>
@@ -307,5 +284,5 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
-  );
+  )
 }
