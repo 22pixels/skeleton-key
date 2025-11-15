@@ -47,60 +47,80 @@ export default function DashboardPage() {
   }
 
   const loadScans = async (userId: string) => {
-    // Get recent scans with file names
-    const { data, error } = await supabase
-      .from('scans')
-      .select(`
-        id,
-        scanned_at,
-        total_vulnerabilities,
-        critical_count,
-        high_count,
-        medium_count,
-        low_count,
-        risk_score,
-        files (
-          file_name
-        )
-      `)
-      .eq('user_id', userId)
-      .order('scanned_at', { ascending: false })
-      .limit(10)
+    try {
+      console.log('Loading scans for user:', userId)
+      
+      // Get recent scans
+      const { data: scansData, error: scansError } = await supabase
+        .from('scans')
+        .select('*')
+        .eq('user_id', userId)
+        .order('scanned_at', { ascending: false })
+        .limit(10)
 
-    if (error) {
-      console.error('Error loading scans:', error)
-      return
+      if (scansError) {
+        console.error('Error loading scans:', scansError)
+        return
+      }
+
+      console.log('Scans loaded:', scansData)
+
+      if (!scansData || scansData.length === 0) {
+        setScans([])
+        return
+      }
+
+      // Get file names separately
+      const fileIds = scansData.map(scan => scan.file_id).filter(Boolean)
+      const { data: filesData, error: filesError } = await supabase
+        .from('files')
+        .select('id, file_name')
+        .in('id', fileIds)
+
+      if (filesError) {
+        console.error('Error loading files:', filesError)
+      }
+
+      console.log('Files loaded:', filesData)
+
+      // Create a map of file_id to file_name
+      const fileMap = new Map()
+      filesData?.forEach(file => {
+        fileMap.set(file.id, file.file_name)
+      })
+
+      // Transform data
+      const transformedScans = scansData.map((scan: any) => ({
+        id: scan.id,
+        file_name: fileMap.get(scan.file_id) || 'Unknown',
+        scanned_at: scan.scanned_at,
+        total_vulnerabilities: scan.total_vulnerabilities,
+        critical_count: scan.critical_count,
+        high_count: scan.high_count,
+        medium_count: scan.medium_count,
+        low_count: scan.low_count,
+        risk_score: scan.risk_score
+      }))
+
+      setScans(transformedScans)
+
+      // Calculate stats
+      const totalScans = transformedScans.length
+      const totalVulnerabilities = transformedScans.reduce((sum, s) => sum + s.total_vulnerabilities, 0)
+      const criticalIssues = transformedScans.reduce((sum, s) => sum + s.critical_count, 0)
+      const averageRisk = totalScans > 0 
+        ? Math.round(transformedScans.reduce((sum, s) => sum + s.risk_score, 0) / totalScans)
+        : 0
+
+      setStats({
+        totalScans,
+        totalVulnerabilities,
+        criticalIssues,
+        averageRisk
+      })
+    } catch (err) {
+      console.error('Error in loadScans:', err)
     }
-
-    // Transform data
-    const transformedScans = data.map((scan: any) => ({
-      id: scan.id,
-      file_name: scan.files?.file_name || 'Unknown',
-      scanned_at: scan.scanned_at,
-      total_vulnerabilities: scan.total_vulnerabilities,
-      critical_count: scan.critical_count,
-      high_count: scan.high_count,
-      medium_count: scan.medium_count,
-      low_count: scan.low_count,
-      risk_score: scan.risk_score
-    }))
-
-    setScans(transformedScans)
-
-    // Calculate stats
-    const totalScans = transformedScans.length
-    const totalVulnerabilities = transformedScans.reduce((sum, s) => sum + s.total_vulnerabilities, 0)
-    const criticalIssues = transformedScans.reduce((sum, s) => sum + s.critical_count, 0)
-    const averageRisk = totalScans > 0 
-      ? Math.round(transformedScans.reduce((sum, s) => sum + s.risk_score, 0) / totalScans)
-      : 0
-
-    setStats({
-      totalScans,
-      totalVulnerabilities,
-      criticalIssues,
-      averageRisk
-    })
   }
 
   const handleLogout = async () => {
@@ -295,7 +315,7 @@ export default function DashboardPage() {
                       </div>
                       
                       {/* Vulnerability Badges */}
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 flex-wrap">
                         {scan.critical_count > 0 && (
                           <div className="flex items-center gap-1 bg-red-500/10 border border-red-500/30 px-3 py-1 rounded-full">
                             <AlertTriangle className="w-3 h-3 text-red-400" />

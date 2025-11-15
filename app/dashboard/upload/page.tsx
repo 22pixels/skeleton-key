@@ -12,7 +12,6 @@ export default function UploadPage() {
   const [files, setFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const [scanning, setScanning] = useState(false)
-  const [uploadComplete, setUploadComplete] = useState(false)
   const [scanResults, setScanResults] = useState<any>(null)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -28,11 +27,16 @@ export default function UploadPage() {
       'text/*': ['.js', '.jsx', '.ts', '.tsx', '.py', '.php', '.java', '.c', '.cpp', '.go', '.rb', '.json'],
       'text/html': ['.html'],
       'text/css': ['.css']
-    }
+    },
+    maxSize: 5 * 1024 * 1024
   })
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const calculateRiskScore = (critical: number, high: number, medium: number, low: number): number => {
+    return (critical * 40) + (high * 20) + (medium * 10) + (low * 5)
   }
 
   const handleUpload = async () => {
@@ -54,36 +58,112 @@ export default function UploadPage() {
 
       const allScanResults: any[] = []
 
-      // Upload and scan each file
       for (const file of files) {
+        console.log('Processing file:', file.name)
+        
         const fileName = `${user.id}/${Date.now()}-${file.name}`
         
-        // Upload to Supabase
+        // Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage
           .from('code-uploads')
           .upload(fileName, file)
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError)
+          throw uploadError
+        }
+
+        console.log('File uploaded to storage:', fileName)
+
+        // Save file metadata to database
+        const { data: fileRecord, error: fileError } = await supabase
+          .from('files')
+          .insert({
+            user_id: user.id,
+            file_name: file.name,
+            file_size: file.size,
+            storage_path: fileName
+          })
+          .select()
+          .single()
+
+        if (fileError) {
+          console.error('File insert error:', fileError)
+          throw fileError
+        }
+
+        console.log('File record created:', fileRecord.id)
 
         // Read file content and scan
         const fileContent = await file.text()
         const scanResult = scanCode(file.name, fileContent)
         allScanResults.push(scanResult)
+
+        console.log('Scan result:', scanResult)
+
+        // Calculate risk score
+        const riskScore = calculateRiskScore(
+          scanResult.criticalCount,
+          scanResult.highCount,
+          scanResult.mediumCount,
+          scanResult.lowCount
+        )
+
+        // Save scan to database
+        const { data: scanRecord, error: scanError } = await supabase
+          .from('scans')
+          .insert({
+            file_id: fileRecord.id,
+            user_id: user.id,
+            status: 'complete',
+            total_vulnerabilities: scanResult.totalIssues,
+            critical_count: scanResult.criticalCount,
+            high_count: scanResult.highCount,
+            medium_count: scanResult.mediumCount,
+            low_count: scanResult.lowCount,
+            risk_score: riskScore
+          })
+          .select()
+          .single()
+
+        if (scanError) {
+          console.error('Scan insert error:', scanError)
+          throw scanError
+        }
+
+        console.log('Scan record created:', scanRecord.id)
+
+        // Save vulnerabilities to database
+        if (scanResult.vulnerabilities.length > 0) {
+          const vulnerabilitiesToInsert = scanResult.vulnerabilities.map(vuln => ({
+            scan_id: scanRecord.id,
+            name: vuln.pattern.name,
+            severity: vuln.pattern.severity,
+            line_number: vuln.line,
+            code_snippet: vuln.code,
+            description: vuln.pattern.description,
+            recommendation: vuln.pattern.recommendation
+          }))
+
+          const { error: vulnError } = await supabase
+            .from('vulnerabilities')
+            .insert(vulnerabilitiesToInsert)
+
+          if (vulnError) {
+            console.error('Vulnerability insert error:', vulnError)
+            throw vulnError
+          }
+
+          console.log('Vulnerabilities saved:', vulnerabilitiesToInsert.length)
+        }
       }
 
       setUploading(false)
       setScanning(true)
       setScanResults(allScanResults)
       
-      // Show results for 3 seconds then redirect
-      setTimeout(() => {
-        setUploadComplete(true)
-        setTimeout(() => {
-          router.push('/dashboard')
-        }, 20000)
-      }, 30000)
-      
     } catch (error: any) {
+      console.error('Upload error:', error)
       setError(error.message || 'Failed to upload files')
       setUploading(false)
     }
@@ -103,7 +183,6 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-[#2a2b2a]">
-      {/* Top Nav */}
       <nav className="border-b border-[#395c6b]/30 bg-[#2a2b2a]">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2">
@@ -118,26 +197,13 @@ export default function UploadPage() {
         </div>
       </nav>
 
-      {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
-        {uploadComplete ? (
-          <div className="text-center py-20">
-            <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold text-[#c2d3cd] mb-4">
-              Scan Complete!
-            </h2>
-            <p className="text-[#afbfc0] mb-4">
-              Found {getTotalIssues()} potential vulnerabilities
-            </p>
-            <p className="text-sm text-[#9fa4a9]">Redirecting to dashboard...</p>
-          </div>
-        ) : scanning ? (
+        {scanning ? (
           <div className="py-12">
             <h2 className="text-3xl font-bold text-[#c2d3cd] mb-8 text-center">
               Scan Results
             </h2>
             
-            {/* Summary Cards */}
             <div className="grid grid-cols-4 gap-4 mb-8">
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-center">
                 <div className="text-3xl font-bold text-red-400">{getTotalBySeverity('critical')}</div>
@@ -157,7 +223,6 @@ export default function UploadPage() {
               </div>
             </div>
 
-            {/* Detailed Results */}
             <div className="space-y-6">
               {scanResults?.map((result: any, fileIndex: number) => (
                 <div key={fileIndex} className="bg-[#2a2b2a] border border-[#395c6b]/30 rounded-xl p-6">
@@ -222,6 +287,15 @@ export default function UploadPage() {
                 </div>
               ))}
             </div>
+
+            {/* Back to Dashboard Button */}
+            <div className="mt-8 text-center">
+              <Link href="/dashboard">
+                <button className="bg-[#c2d3cd] hover:bg-[#afbfc0] text-[#2a2b2a] px-8 py-3 rounded-lg font-semibold transition-all">
+                  ← Back to Dashboard
+                </button>
+              </Link>
+            </div>
           </div>
         ) : (
           <>
@@ -234,7 +308,6 @@ export default function UploadPage() {
               </p>
             </div>
 
-            {/* Error Message */}
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start gap-3 mb-6">
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
@@ -242,7 +315,6 @@ export default function UploadPage() {
               </div>
             )}
 
-            {/* Dropzone */}
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all ${
@@ -266,11 +338,11 @@ export default function UploadPage() {
                   <p className="text-sm text-[#9fa4a9]">
                     Supported: .js, .jsx, .ts, .tsx, .py, .php, .java, .c, .cpp, .go, .rb, .html, .css
                   </p>
+                  <p className="text-xs text-[#9fa4a9] mt-2">Max file size: 5MB</p>
                 </>
               )}
             </div>
 
-            {/* File List */}
             {files.length > 0 && (
               <div className="mt-8">
                 <h3 className="text-lg font-semibold text-[#c2d3cd] mb-4">
@@ -301,7 +373,6 @@ export default function UploadPage() {
                   ))}
                 </div>
 
-                {/* Upload Button */}
                 <button
                   onClick={handleUpload}
                   disabled={uploading}
