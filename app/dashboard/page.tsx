@@ -252,18 +252,21 @@ export default function DashboardPage() {
             </Link>
 
             {/* GitHub Repo */}
-            <button className="bg-[#2a2b2a] border-2 border-[#395c6b]/30 rounded-xl p-8 opacity-50 cursor-not-allowed text-left">
-              <div className="w-12 h-12 bg-[#395c6b]/20 rounded-lg flex items-center justify-center mb-6">
-                <Github className="w-6 h-6 text-[#395c6b]" />
-              </div>
-              <h3 className="text-xl font-bold text-[#c2d3cd] mb-2">GitHub Repo</h3>
-              <p className="text-[#afbfc0]">
-                Scan an entire repository by URL
-              </p>
-              <div className="mt-6 flex items-center gap-2 text-[#9fa4a9] font-semibold">
-                <span className="text-xs bg-[#9fa4a9]/20 px-2 py-1 rounded">Coming Soon</span>
-              </div>
-            </button>
+<Link href="/dashboard/github">
+  <button className="bg-[#2a2b2a] border-2 border-[#395c6b]/30 rounded-xl p-8 hover:border-[#395c6b] transition-all text-left group w-full">
+    <div className="w-12 h-12 bg-[#395c6b]/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-[#395c6b]/30 transition-all">
+      <Github className="w-6 h-6 text-[#395c6b]" />
+    </div>
+    <h3 className="text-xl font-bold text-[#c2d3cd] mb-2">GitHub Repo</h3>
+    <p className="text-[#afbfc0]">
+      Scan an entire repository by URL
+    </p>
+    <div className="mt-6 flex items-center gap-2 text-[#395c6b] font-semibold">
+      <Github className="w-4 h-4" />
+      <span>Enter URL</span>
+    </div>
+  </button>
+</Link>
 
             {/* Website URL */}
             <button className="bg-[#2a2b2a] border-2 border-[#395c6b]/30 rounded-xl p-8 opacity-50 cursor-not-allowed text-left">
