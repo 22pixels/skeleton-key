@@ -279,7 +279,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-[#395c6b]/30 pt-8 text-center text-sm text-[#9fa4a9]">
-            <p>© 2025 Skeleton Key. Built with determination and caffeine by Take5.</p>
+            <p>© 2025 Skeleton Key. Built with determination and caffeine by 22_pixels.</p>
           </div>
         </div>
       </footer>
