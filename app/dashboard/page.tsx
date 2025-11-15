@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { Key, LogOut, Upload, FileCode, Globe, Github } from 'lucide-react'
+import Link from 'next/link'
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
@@ -74,22 +75,23 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Scan Options Grid */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Upload Code */}
-          <button className="bg-[#2a2b2a] border-2 border-[#395c6b]/30 rounded-xl p-8 hover:border-[#395c6b] transition-all text-left group">
-            <div className="w-12 h-12 bg-[#395c6b]/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-[#395c6b]/30 transition-all">
-              <FileCode className="w-6 h-6 text-[#395c6b]" />
-            </div>
-            <h3 className="text-xl font-bold text-[#c2d3cd] mb-2">Upload Code</h3>
-            <p className="text-[#afbfc0]">
-              Drag and drop your source files for analysis
-            </p>
-            <div className="mt-6 flex items-center gap-2 text-[#395c6b] font-semibold">
-              <Upload className="w-4 h-4" />
-              <span>Start Upload</span>
-            </div>
-          </button>
+      <div className="grid md:grid-cols-3 gap-6">
+  {/* Upload Code */}
+  <Link href="/dashboard/upload">
+    <button className="bg-[#2a2b2a] border-2 border-[#395c6b]/30 rounded-xl p-8 hover:border-[#395c6b] transition-all text-left group w-full">
+      <div className="w-12 h-12 bg-[#395c6b]/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-[#395c6b]/30 transition-all">
+        <FileCode className="w-6 h-6 text-[#395c6b]" />
+      </div>
+      <h3 className="text-xl font-bold text-[#c2d3cd] mb-2">Upload Code</h3>
+      <p className="text-[#afbfc0]">
+        Drag and drop your source files for analysis
+      </p>
+      <div className="mt-6 flex items-center gap-2 text-[#395c6b] font-semibold">
+        <Upload className="w-4 h-4" />
+        <span>Start Upload</span>
+      </div>
+    </button>
+  </Link>
 
           {/* GitHub Repo */}
           <button className="bg-[#2a2b2a] border-2 border-[#395c6b]/30 rounded-xl p-8 hover:border-[#395c6b] transition-all text-left group">

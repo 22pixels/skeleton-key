@@ -21,7 +21,6 @@ export default function SignupPage() {
     setError('')
     setLoading(true)
 
-    // Validation
     if (password !== confirmPassword) {
       setError('Passwords do not match')
       setLoading(false)
@@ -49,7 +48,6 @@ export default function SignupPage() {
 
       setSuccess(true)
       
-      // Redirect to dashboard after 2 seconds
       setTimeout(() => {
         router.push('/dashboard')
       }, 2000)
@@ -63,7 +61,6 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-[#2a2b2a] flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Key className="w-10 h-10 text-[#395c6b]" />
@@ -72,25 +69,19 @@ export default function SignupPage() {
           <p className="text-[#afbfc0]">Create your account and start scanning</p>
         </div>
 
-        {/* Signup Form */}
         <div className="bg-[#2a2b2a] border border-[#395c6b]/30 rounded-xl p-8">
           {success ? (
-            // Success Message
             <div className="text-center py-8">
               <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-[#c2d3cd] mb-2">
                 Account Created!
               </h3>
               <p className="text-[#afbfc0] mb-4">
-                Check your email to verify your account.
-              </p>
-              <p className="text-sm text-[#9fa4a9]">
                 Redirecting to dashboard...
               </p>
             </div>
           ) : (
             <form onSubmit={handleSignup} className="space-y-5">
-              {/* Error Message */}
               {error && (
                 <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
@@ -98,7 +89,6 @@ export default function SignupPage() {
                 </div>
               )}
 
-              {/* Full Name Field */}
               <div>
                 <label className="block text-sm font-semibold text-[#c2d3cd] mb-2">
                   Full Name
@@ -116,7 +106,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Email Field */}
               <div>
                 <label className="block text-sm font-semibold text-[#c2d3cd] mb-2">
                   Email Address
@@ -134,7 +123,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Password Field */}
               <div>
                 <label className="block text-sm font-semibold text-[#c2d3cd] mb-2">
                   Password
@@ -155,7 +143,6 @@ export default function SignupPage() {
                 </p>
               </div>
 
-              {/* Confirm Password Field */}
               <div>
                 <label className="block text-sm font-semibold text-[#c2d3cd] mb-2">
                   Confirm Password
@@ -173,32 +160,10 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Terms Checkbox */}
-              <div>
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    required
-                    className="w-4 h-4 mt-1 rounded border-[#395c6b]/30 bg-[#2a2b2a] text-[#395c6b] focus:ring-[#395c6b]"
-                  />
-                  <span className="text-sm text-[#afbfc0]">
-                    I agree to the{' '}
-                    <a href="#" className="text-[#395c6b] hover:text-[#395c6b]/80">
-                      Terms of Service
-                    </a>{' '}
-                    and{' '}
-                    <a href="#" className="text-[#395c6b] hover:text-[#395c6b]/80">
-                      Privacy Policy
-                    </a>
-                  </span>
-                </label>
-              </div>
-
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#c2d3cd] hover:bg-[#afbfc0] text-[#2a2b2a] font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#c2d3cd] hover:bg-[#afbfc0] text-[#2a2b2a] font-semibold py-3 rounded-lg transition-all disabled:opacity-50"
               >
                 {loading ? 'Creating Account...' : 'Create Account'}
               </button>
@@ -207,7 +172,6 @@ export default function SignupPage() {
 
           {!success && (
             <>
-              {/* Divider */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-[#395c6b]/30"></div>
@@ -219,7 +183,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Login Link */}
               <Link href="/login">
                 <button className="w-full border-2 border-[#c2d3cd] hover:bg-[#c2d3cd]/10 text-[#c2d3cd] font-semibold py-3 rounded-lg transition-all">
                   Sign In Instead
@@ -229,7 +192,6 @@ export default function SignupPage() {
           )}
         </div>
 
-        {/* Back to Home */}
         <div className="text-center mt-6">
           <Link href="/" className="text-sm text-[#9fa4a9] hover:text-[#c2d3cd]">
             ← Back to home
